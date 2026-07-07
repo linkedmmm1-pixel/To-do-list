@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Do / Don't</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1f8a4c">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --do-color: #1f8a4c;
+    --do-bg: #eaf7ef;
+    --dont-color: #c23b3b;
+    --dont-bg: #fbeaea;
+    --ink: #1c1c1c;
+    --paper: #faf9f6;
+    --line: #e2ded5;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--paper);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    overscroll-behavior: none;
+  }
+  header {
+    padding: 22px 20px 10px;
+    text-align: center;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  header p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #8a8574;
+  }
+  main {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 10px 14px 30px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .section {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .section-head.do { background: var(--do-bg); color: var(--do-color); }
+  .section-head.dont { background: var(--dont-bg); color: var(--dont-color); }
+
+  .task-list { list-style: none; margin: 0; padding: 4px 0; }
+  .task-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #f1efe9;
+    font-size: 15px;
+  }
+  .task-list li:last-child { border-bottom: none; }
+  .task-list li.done .task-text { text-decoration: line-through; color: #aaa; }
+
+  .check {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: white;
+  }
+  .section-head.do ~ .task-list .check { border-color: var(--do-color); }
+  .do-list .check.checked { background: var(--do-color); border-color: var(--do-color); }
+  .dont-list .check { border-color: var(--dont-color); }
+  .dont-list .check.checked { background: var(--dont-color); border-color: var(--dont-color); }
+  .check.checked::after {
+    content: "✓";
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+  }
+
+  .task-text { flex: 1; word-break: break-word; }
+
+  .del {
+    color: #c7c2b4;
+    font-size: 18px;
+    padding: 4px 6px;
+    line-height: 1;
+  }
+
+  .empty {
+    padding: 16px;
+    font-size: 13px;
+    color: #a8a396;
+    text-align: center;
+    font-style: italic;
+  }
+
+  .add-row {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #fcfbf8;
+    border-top: 1px solid var(--line);
+  }
+  .add-row input {
+    flex: 1;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 15px;
+    background: white;
+    color: var(--ink);
+  }
+  .add-row input:focus { outline: 2px solid #ccc; }
+  .add-row button {
+    border: none;
+    border-radius: 8px;
+    padding: 0 18px;
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+  }
+  .add-row.do button { background: var(--do-color); }
+  .add-row.dont button { background: var(--dont-color); }
+
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: #b3ae9f;
+    padding: 0 20px 24px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Do / Don't</h1>
+  <p id="reset-note">Resets daily at 4:00 AM</p>
+</header>
+
+<main>
+  <div class="section">
+    <div class="section-head do">
+      <span>✅ Do</span>
+    </div>
+    <ul class="task-list do-list" id="do-list"></ul>
+    <div class="add-row do">
+      <input id="do-input" type="text" placeholder="Add something to do..." maxlength="120">
+      <button onclick="addTask('do')">+</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head dont">
+      <span>🚫 Don't</span>
+    </div>
+    <ul class="task-list dont-list" id="dont-list"></ul>
+    <div class="add-row dont">
+      <input id="dont-input" type="text" placeholder="Add something to avoid..." maxlength="120">
+      <button onclick="addTask('dont')">+</button>
+    </div>
+  </div>
+</main>
+
+<footer>Tasks clear automatically every day after 4:00 AM.</footer>
+
+<script>
+const STORAGE_KEY = 'doDontData';
+
+function getResetBoundary(now) {
+  // Today's 4am
+  const boundary = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 4, 0, 0, 0);
+  if (now < boundary) {
+    // Before 4am today -> boundary is yesterday's 4am
+    boundary.setDate(boundary.getDate() - 1);
+  }
+  return boundary;
+}
+
+function loadData() {
+  let raw = localStorage.getItem(STORAGE_KEY);
+  let data;
+  if (raw) {
+    try { data = JSON.parse(raw); } catch(e) { data = null; }
+  }
+  if (!data) {
+    data = { do: [], dont: [], lastReset: Date.now() };
+  }
+
+  const now = new Date();
+  const boundary = getResetBoundary(now);
+  if (data.lastReset < boundary.getTime()) {
+    data.do = [];
+    data.dont = [];
+    data.lastReset = now.getTime();
+    saveData(data);
+  }
+  return data;
+}
+
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+let state = loadData();
+
+function render() {
+  renderList('do');
+  renderList('dont');
+}
+
+function renderList(type) {
+  const listEl = document.getElementById(type + '-list');
+  const items = state[type];
+  listEl.innerHTML = '';
+  if (items.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.textContent = type === 'do' ? 'Nothing added yet.' : 'Nothing added yet.';
+    listEl.appendChild(empty);
+    return;
+  }
+  items.forEach((item, idx) => {
+    const li = document.createElement('li');
+    if (item.done) li.classList.add('done');
+
+    const check = document.createElement('div');
+    check.className = 'check' + (item.done ? ' checked' : '');
+    check.onclick = () => toggleTask(type, idx);
+
+    const text = document.createElement('span');
+    text.className = 'task-text';
+    text.textContent = item.text;
+
+    const del = document.createElement('span');
+    del.className = 'del';
+    del.textContent = '✕';
+    del.onclick = () => deleteTask(type, idx);
+
+    li.appendChild(check);
+    li.appendChild(text);
+    li.appendChild(del);
+    listEl.appendChild(li);
+  });
+}
+
+function addTask(type) {
+  const input = document.getElementById(type + '-input');
+  const text = input.value.trim();
+  if (!text) return;
+  state[type].push({ text, done: false });
+  input.value = '';
+  saveData(state);
+  render();
+}
+
+function toggleTask(type, idx) {
+  state[type][idx].done = !state[type][idx].done;
+  saveData(state);
+  render();
+}
+
+function deleteTask(type, idx) {
+  state[type].splice(idx, 1);
+  saveData(state);
+  render();
+}
+
+document.getElementById('do-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addTask('do');
+});
+document.getElementById('dont-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addTask('dont');
+});
+
+// Re-check reset boundary whenever the page becomes visible again
+// (covers the case where the phone was asleep/app closed overnight)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    state = loadData();
+    render();
+  }
+});
+
+render();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+
+</body>
+</html>
